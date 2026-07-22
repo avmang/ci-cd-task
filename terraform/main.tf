@@ -8,12 +8,10 @@ terraform {
     }
   }
 
-  # Backend configuration for state management
-  # Uncomment and configure after creating GCS bucket
-  # backend "gcs" {
-  #   bucket = "your-terraform-state-bucket"
-  #   prefix = "terraform/state"
-  # }
+  backend "gcs" {
+    bucket = "mavoyan-tf-bucket"
+    prefix = "terraform/state"
+  }
 }
 
 provider "google" {
@@ -21,31 +19,31 @@ provider "google" {
   region  = var.region
 }
 
-resource "google_project_service" "apis" {
-  for_each = toset([
-    "run.googleapis.com",
-    "artifactregistry.googleapis.com",
-    "iam.googleapis.com",
-    "iamcredentials.googleapis.com"
-  ])
-  service            = each.value
-  disable_on_destroy = false
-}
+# resource "google_project_service" "apis" {
+#   for_each = toset([
+#     "run.googleapis.com",
+#     "artifactregistry.googleapis.com",
+#     "iam.googleapis.com",
+#     "iamcredentials.googleapis.com"
+#   ])
+#   service            = each.value
+#   disable_on_destroy = false
+# }
 
 resource "google_artifact_registry_repository" "repo" {
   location      = var.region
-  repository_id = "flask-app-repo"
+  repository_id = "mavoyan-flask-app-repo"
   format        = "DOCKER"
-  depends_on    = [google_project_service.apis]
+  # depends_on    = [google_project_service.apis]
 }
 
 resource "google_iam_workload_identity_pool" "pool" {
-  workload_identity_pool_id = "github-pool"
+  workload_identity_pool_id = "mavoyan-github-pool"
 }
 
 resource "google_iam_workload_identity_pool_provider" "github" {
   workload_identity_pool_id          = google_iam_workload_identity_pool.pool.workload_identity_pool_id
-  workload_identity_pool_provider_id = "github"
+  workload_identity_pool_provider_id = "mavoyan-github-provider"
 
   attribute_mapping = {
     "google.subject"       = "assertion.sub"
@@ -58,7 +56,9 @@ resource "google_iam_workload_identity_pool_provider" "github" {
 }
 
 resource "google_service_account" "github_sa" {
-  account_id = "github-actions"
+  account_id   = "mavoyan-github-actions"
+  display_name = "Mavoyan GitHub Actions Service Account"
+  description  = "Service account for Mavoyan GitHub Actions CI/CD pipeline"
 }
 
 resource "google_project_iam_member" "github_roles" {

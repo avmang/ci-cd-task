@@ -1,9 +1,9 @@
 # Staging environment configuration
 project_id    = "your-gcp-project-id"
 region        = "us-central1"
-github_repo   = "your-github-username/your-repo-name"
+github_repo   = "mavoyan/your-repo-name"
 environment   = "staging"
-service_name  = "flask-app-staging"
+service_name  = "mavoyan-flask-app-staging"
 min_instances = 0
 max_instances = 10
 cpu_limit     = "1"

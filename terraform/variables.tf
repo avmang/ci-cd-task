@@ -23,7 +23,7 @@ variable "environment" {
 variable "service_name" {
   description = "Name of the Cloud Run service"
   type        = string
-  default     = "flask-app"
+  default     = "mavoyan-flask-app"
 }
 
 variable "min_instances" {
