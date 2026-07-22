@@ -3,6 +3,8 @@ project_id    = "your-gcp-project-id"
 region        = "us-central1"
 github_repo   = "mavoyan/your-repo-name"
 environment   = "production"
+
+# Cloud Run settings (legacy - now using GKE)
 service_name  = "mavoyan-flask-app"
 min_instances = 1
 max_instances = 100

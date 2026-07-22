@@ -19,22 +19,10 @@ provider "google" {
   region  = var.region
 }
 
-# resource "google_project_service" "apis" {
-#   for_each = toset([
-#     "run.googleapis.com",
-#     "artifactregistry.googleapis.com",
-#     "iam.googleapis.com",
-#     "iamcredentials.googleapis.com"
-#   ])
-#   service            = each.value
-#   disable_on_destroy = false
-# }
-
 resource "google_artifact_registry_repository" "repo" {
   location      = var.region
   repository_id = "mavoyan-flask-app-repo"
   format        = "DOCKER"
-  # depends_on    = [google_project_service.apis]
 }
 
 resource "google_iam_workload_identity_pool" "pool" {

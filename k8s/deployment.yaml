@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mavoyan-flask-app
+  labels:
+    app: mavoyan-flask-app
+    environment: production
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: mavoyan-flask-app
+  template:
+    metadata:
+      labels:
+        app: mavoyan-flask-app
+    spec:
+      serviceAccountName: mavoyan-flask-app
+      containers:
+      - name: flask-app
+        image: us-central1-docker.pkg.dev/PROJECT_ID/mavoyan-flask-app-repo/mavoyan-flask-app:latest
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: PORT
+          value: "8080"
+        - name: ENVIRONMENT
+          value: "production"
+        - name: APP_VERSION
+          value: "COMMIT_SHA"
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            cpu: 500m
+            memory: 512Mi
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          timeoutSeconds: 3
+          failureThreshold: 3
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
