@@ -119,7 +119,7 @@ jobs:
     name: Deploy to Staging (GKE)
     runs-on: ubuntu-latest
     needs: build-scan
-    if: github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/main'
     environment:
       name: staging
       url: ${{ steps.get-url.outputs.url }}
@@ -133,8 +133,7 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -160,29 +159,33 @@ jobs:
 
       - name: Deploy to GKE
         run: |
+          # Create namespace if not exists
+          kubectl apply -f k8s/namespace-staging.yaml
+
           # Update image in deployment
           sed -i "s|PROJECT_ID|${{ env.PROJECT_ID }}|g" k8s/*.yaml
           sed -i "s|COMMIT_SHA|staging-${{ github.sha }}|g" k8s/deployment.yaml
           sed -i "s|:latest|:staging-${{ github.sha }}|g" k8s/deployment.yaml
+          sed -i "s|environment: production|environment: staging|g" k8s/deployment.yaml
 
-          # Apply Kubernetes manifests
-          kubectl apply -f k8s/serviceaccount.yaml
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
-          kubectl apply -f k8s/hpa.yaml
+          # Apply Kubernetes manifests to staging namespace
+          kubectl apply -f k8s/serviceaccount.yaml -n staging
+          kubectl apply -f k8s/deployment.yaml -n staging
+          kubectl apply -f k8s/service.yaml -n staging
+          kubectl apply -f k8s/hpa.yaml -n staging
 
           # Wait for deployment to be ready
-          kubectl rollout status deployment/${{ env.SERVICE }} --timeout=5m
+          kubectl rollout status deployment/${{ env.SERVICE }} -n staging --timeout=5m
 
       - name: Get service URL
         id: get-url
         run: |
           # Wait for LoadBalancer IP
           for i in {1..30}; do
-            EXTERNAL_IP=$(kubectl get service ${{ env.SERVICE }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            EXTERNAL_IP=$(kubectl get service ${{ env.SERVICE }} -n staging -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
             if [ ! -z "$EXTERNAL_IP" ]; then
               echo "url=http://$EXTERNAL_IP" >> $GITHUB_OUTPUT
-              echo "Service URL: http://$EXTERNAL_IP"
+              echo "Staging Service URL: http://$EXTERNAL_IP"
               break
             fi
             echo "Waiting for LoadBalancer IP... ($i/30)"
@@ -192,7 +195,7 @@ jobs:
       - name: Health check
         run: |
           sleep 10
-          EXTERNAL_IP=$(kubectl get service ${{ env.SERVICE }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          EXTERNAL_IP=$(kubectl get service ${{ env.SERVICE }} -n staging -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
           if [ ! -z "$EXTERNAL_IP" ]; then
             curl -f http://$EXTERNAL_IP/health || exit 1
           fi
@@ -200,7 +203,7 @@ jobs:
   deploy-production-gke:
     name: Deploy to Production (GKE)
     runs-on: ubuntu-latest
-    needs: build-scan
+    needs: deploy-staging-gke
     if: github.ref == 'refs/heads/main'
     environment:
       name: production
@@ -215,8 +218,7 @@ jobs:
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
-          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
-          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Set up Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
@@ -242,29 +244,32 @@ jobs:
 
       - name: Deploy to GKE
         run: |
+          # Create namespace if not exists
+          kubectl apply -f k8s/namespace-production.yaml
+
           # Update image in deployment
           sed -i "s|PROJECT_ID|${{ env.PROJECT_ID }}|g" k8s/*.yaml
           sed -i "s|COMMIT_SHA|${{ github.sha }}|g" k8s/deployment.yaml
           sed -i "s|:latest|:${{ github.sha }}|g" k8s/deployment.yaml
 
-          # Apply Kubernetes manifests
-          kubectl apply -f k8s/serviceaccount.yaml
-          kubectl apply -f k8s/deployment.yaml
-          kubectl apply -f k8s/service.yaml
-          kubectl apply -f k8s/hpa.yaml
+          # Apply Kubernetes manifests to production namespace
+          kubectl apply -f k8s/serviceaccount.yaml -n production
+          kubectl apply -f k8s/deployment.yaml -n production
+          kubectl apply -f k8s/service.yaml -n production
+          kubectl apply -f k8s/hpa.yaml -n production
 
           # Wait for deployment to be ready
-          kubectl rollout status deployment/${{ env.SERVICE }} --timeout=5m
+          kubectl rollout status deployment/${{ env.SERVICE }} -n production --timeout=5m
 
       - name: Get service URL
         id: get-url
         run: |
           # Wait for LoadBalancer IP
           for i in {1..30}; do
-            EXTERNAL_IP=$(kubectl get service ${{ env.SERVICE }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+            EXTERNAL_IP=$(kubectl get service ${{ env.SERVICE }} -n production -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
             if [ ! -z "$EXTERNAL_IP" ]; then
               echo "url=http://$EXTERNAL_IP" >> $GITHUB_OUTPUT
-              echo "Service URL: http://$EXTERNAL_IP"
+              echo "Production Service URL: http://$EXTERNAL_IP"
               break
             fi
             echo "Waiting for LoadBalancer IP... ($i/30)"
@@ -274,7 +279,7 @@ jobs:
       - name: Health check
         run: |
           sleep 10
-          EXTERNAL_IP=$(kubectl get service ${{ env.SERVICE }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          EXTERNAL_IP=$(kubectl get service ${{ env.SERVICE }} -n production -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
           if [ ! -z "$EXTERNAL_IP" ]; then
             curl -f http://$EXTERNAL_IP/health || exit 1
           fi
@@ -283,7 +288,7 @@ jobs:
         if: success()
         run: |
           echo "🚀 Production deployment successful!"
-          EXTERNAL_IP=$(kubectl get service ${{ env.SERVICE }} -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
+          EXTERNAL_IP=$(kubectl get service ${{ env.SERVICE }} -n production -o jsonpath='{.status.loadBalancer.ingress[0].ip}')
           echo "URL: http://$EXTERNAL_IP"
           echo "Version: ${{ github.sha }}"
 

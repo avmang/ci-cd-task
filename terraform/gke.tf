@@ -83,6 +83,9 @@ resource "google_container_node_pool" "primary_nodes" {
     preemptible  = false
     machine_type = "e2-medium"
 
+    # Use existing service account
+    service_account = "gke-image-puller@gd-gcp-gridu-devops-t1-t2.iam.gserviceaccount.com"
+
     # OAuth scopes
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform",
@@ -132,38 +135,4 @@ resource "google_container_node_pool" "primary_nodes" {
     max_surge       = 1
     max_unavailable = 0
   }
-}
-
-# Service Account for GKE nodes
-resource "google_service_account" "gke_sa" {
-  account_id   = "mavoyan-gke-nodes"
-  display_name = "Mavoyan GKE Node Service Account"
-  description  = "Service account for GKE cluster nodes"
-}
-
-# IAM binding for GKE service account
-resource "google_project_iam_member" "gke_sa_roles" {
-  for_each = toset([
-    "roles/logging.logWriter",
-    "roles/monitoring.metricWriter",
-    "roles/monitoring.viewer",
-    "roles/artifactregistry.reader",
-  ])
-  project = var.project_id
-  role    = each.value
-  member  = "serviceAccount:${google_service_account.gke_sa.email}"
-}
-
-# Kubernetes Service Account for application
-resource "google_service_account" "app_sa" {
-  account_id   = "mavoyan-flask-app-k8s"
-  display_name = "Mavoyan Flask App Kubernetes Service Account"
-  description  = "Service account for Flask application in GKE"
-}
-
-# IAM binding for application service account
-resource "google_service_account_iam_member" "app_workload_identity" {
-  service_account_id = google_service_account.app_sa.name
-  role               = "roles/iam.workloadIdentityUser"
-  member             = "serviceAccount:${var.project_id}.svc.id.goog[default/mavoyan-flask-app]"
 }

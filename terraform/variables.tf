@@ -1,17 +1,13 @@
 variable "project_id" {
   description = "GCP Project ID"
   type        = string
+  default     = "gd-gcp-gridu-devops-t1-t2"
 }
 
 variable "region" {
   description = "GCP region for resources"
   type        = string
   default     = "us-central1"
-}
-
-variable "github_repo" {
-  description = "GitHub repository in format 'owner/repo'"
-  type        = string
 }
 
 variable "environment" {
