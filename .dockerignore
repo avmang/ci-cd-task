@@ -1,0 +1,88 @@
+# Python cache and compiled files
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.pyw
+.Python
+
+# Virtual environments
+env/
+venv/
+.venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Testing
+.tox/
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+test_*.py
+tests/
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE and editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+azure-pipelines.yml
+Jenkinsfile
+
+# Infrastructure as Code
+terraform/
+*.tf
+*.tfvars
+*.tfstate
+
+# Documentation
+*.md
+README*
+LICENSE*
+docs/
+
+# Environment files
+.env
+.env.*
+.envrc
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Security
+*.key
+*.pem
+*.crt
+secrets/

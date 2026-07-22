@@ -1,0 +1,10 @@
+# Staging environment configuration
+project_id    = "your-gcp-project-id"
+region        = "us-central1"
+github_repo   = "your-github-username/your-repo-name"
+environment   = "staging"
+service_name  = "flask-app-staging"
+min_instances = 0
+max_instances = 10
+cpu_limit     = "1"
+memory_limit  = "512Mi"
