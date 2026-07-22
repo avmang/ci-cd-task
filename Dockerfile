@@ -3,24 +3,25 @@ FROM python:3.11-slim-bookworm AS builder
 
 WORKDIR /app
 
-# Install security updates and dependencies in a virtual environment
-COPY requirements.txt .
+# Install security updates and production dependencies only
+COPY requirements-prod.txt .
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
     python -m venv /opt/venv && \
-    /opt/venv/bin/pip install --no-cache-dir --upgrade pip && \
-    /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
+    /opt/venv/bin/pip install --no-cache-dir --upgrade pip 'wheel>=0.46.2' 'setuptools>=81.0.0' && \
+    /opt/venv/bin/pip install --no-cache-dir -r requirements-prod.txt
 
 # Runtime stage
 FROM python:3.11-slim-bookworm
 
-# Install security updates
+# Install security updates and upgrade vulnerable packages
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/* && \
+    pip install --no-cache-dir --upgrade 'wheel>=0.46.2' 'setuptools>=81.0.0'
 
 # Security: Run as non-root user
 RUN useradd -m -u 1000 appuser && \
