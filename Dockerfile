@@ -1,16 +1,26 @@
 # Build stage
-FROM python:3.11-slim AS builder
+FROM python:3.11-slim-bookworm AS builder
 
 WORKDIR /app
 
-# Install dependencies in a virtual environment
+# Install security updates and dependencies in a virtual environment
 COPY requirements.txt .
-RUN python -m venv /opt/venv && \
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/* && \
+    python -m venv /opt/venv && \
     /opt/venv/bin/pip install --no-cache-dir --upgrade pip && \
     /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 
 # Runtime stage
-FROM python:3.11-slim
+FROM python:3.11-slim-bookworm
+
+# Install security updates
+RUN apt-get update && \
+    apt-get upgrade -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 # Security: Run as non-root user
 RUN useradd -m -u 1000 appuser && \

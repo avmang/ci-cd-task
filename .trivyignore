@@ -1,0 +1,9 @@
+# Trivy Ignore File
+# This file contains vulnerability IDs that should be ignored during scanning
+# Only add entries here if:
+# 1. The vulnerability is a false positive
+# 2. No fix is available yet
+# 3. The vulnerability is in a transitive dependency and doesn't affect our usage
+
+# Add specific CVE IDs here when needed
+# Example: CVE-2024-12345
