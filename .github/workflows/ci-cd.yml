@@ -339,23 +339,28 @@ jobs:
           echo "- Build & Scan: ${{ needs.build-scan.result }}" >> $GITHUB_STEP_SUMMARY
           echo "- Deploy GKE: ${{ needs.deploy-production-gke.result }}" >> $GITHUB_STEP_SUMMARY
 
-      # Uncomment and configure for Slack notifications
-      # - name: Slack Notification
-      #   uses: slackapi/slack-github-action@v1
-      #   if: always()
-      #   with:
-      #     payload: |
-      #       {
-      #         "text": "${{ steps.status.outputs.emoji }} Pipeline ${{ steps.status.outputs.status }} for ${{ github.repository }}",
-      #         "blocks": [
-      #           {
-      #             "type": "section",
-      #             "text": {
-      #               "type": "mrkdwn",
-      #               "text": "*Repository:* ${{ github.repository }}\n*Branch:* ${{ github.ref_name }}\n*Status:* ${{ steps.status.outputs.status }}\n*Commit:* <${{ github.event.head_commit.url }}|${{ github.sha }}>"
-      #             }
-      #           }
-      #         ]
-      #       }
-      #   env:
-      #     SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: Email Notification
+        uses: dawidd6/action-send-mail@v3
+        if: always()
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "Pipeline status"
+          to: ${{ secrets.EMAIL_TO }}
+          from: GitHub Actions
+          body: |
+            Pipeline Status: ${{ steps.status.outputs.status }}
+
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Commit: ${{ github.sha }}
+            Author: ${{ github.actor }}
+
+            Job Results:
+            - Tests: ${{ needs.test.result }}
+            - Build & Scan: ${{ needs.build-scan.result }}
+            - Deploy to Production: ${{ needs.deploy-production-gke.result }}
+
+            View workflow run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
