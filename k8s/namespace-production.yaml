@@ -4,4 +4,3 @@ metadata:
   name: production
   labels:
     environment: production
-    managed-by: terraform

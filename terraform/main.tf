@@ -15,7 +15,7 @@ terraform {
 }
 
 provider "google" {
-  project = var.project_id
+  project = var.gd-gcp-gridu-devops-t1-t2
   region  = var.region
 }
 

@@ -6,7 +6,7 @@ metadata:
     app: mavoyan-flask-app
     environment: production
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
       app: mavoyan-flask-app
@@ -18,7 +18,7 @@ spec:
       serviceAccountName: mavoyan-flask-app
       containers:
       - name: flask-app
-        image: us-central1-docker.pkg.dev/PROJECT_ID/mavoyan-flask-app-repo/mavoyan-flask-app:latest
+        image: us-central1-docker.pkg.dev/gd-gcp-gridu-devops-t1-t2/mavoyan-flask-app-repo/mavoyan-flask-app:latest
         ports:
         - containerPort: 8080
           name: http

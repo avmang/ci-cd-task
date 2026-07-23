@@ -16,14 +16,10 @@ resource "google_container_cluster" "primary" {
 
   # Workload Identity
   workload_identity_config {
-    workload_pool = "${var.project_id}.svc.id.goog"
+    workload_pool = "${var.gd-gcp-gridu-devops-t1-t2}.svc.id.goog"
   }
 
-  # Enable Autopilot for simplified management (optional)
-  # For standard cluster, comment this out
-  # enable_autopilot = true
-
-  # Security settings
+  # Security
   master_auth {
     client_certificate_config {
       issue_client_certificate = false
@@ -37,13 +33,11 @@ resource "google_container_cluster" "primary" {
     }
   }
 
-  # Networking mode
   ip_allocation_policy {
     cluster_ipv4_cidr_block  = ""
     services_ipv4_cidr_block = ""
   }
 
-  # Addons
   addons_config {
     http_load_balancing {
       disabled = false
@@ -53,11 +47,9 @@ resource "google_container_cluster" "primary" {
     }
   }
 
-  # Cluster logging and monitoring
   logging_service    = "logging.googleapis.com/kubernetes"
   monitoring_service = "monitoring.googleapis.com/kubernetes"
 
-  # Resource labels
   resource_labels = {
     environment = var.environment
     project     = "mavoyan-flask-app"
@@ -65,28 +57,23 @@ resource "google_container_cluster" "primary" {
   }
 }
 
-# Separately Managed Node Pool
 resource "google_container_node_pool" "primary_nodes" {
   name       = "mavoyan-flask-app-node-pool"
   location   = var.region
   cluster    = google_container_cluster.primary.name
   node_count = 2
 
-  # Auto-scaling configuration
   autoscaling {
     min_node_count = 1
     max_node_count = 5
   }
 
-  # Node configuration
   node_config {
     preemptible  = false
     machine_type = "e2-medium"
 
-    # Use existing service account
     service_account = "gke-image-puller@gd-gcp-gridu-devops-t1-t2.iam.gserviceaccount.com"
 
-    # OAuth scopes
     oauth_scopes = [
       "https://www.googleapis.com/auth/cloud-platform",
       "https://www.googleapis.com/auth/devstorage.read_only",
@@ -94,43 +81,35 @@ resource "google_container_node_pool" "primary_nodes" {
       "https://www.googleapis.com/auth/monitoring",
     ]
 
-    # Workload Identity
     workload_metadata_config {
       mode = "GKE_METADATA"
     }
 
-    # Security
     shielded_instance_config {
       enable_secure_boot          = true
       enable_integrity_monitoring = true
     }
 
-    # Resource labels
     labels = {
       environment = var.environment
       project     = "mavoyan-flask-app"
     }
 
-    # Metadata
     metadata = {
       disable-legacy-endpoints = "true"
     }
 
-    # Disk configuration
     disk_size_gb = 50
     disk_type    = "pd-standard"
 
-    # Image type
     image_type = "COS_CONTAINERD"
   }
 
-  # Node management
   management {
     auto_repair  = true
     auto_upgrade = true
   }
 
-  # Upgrade settings
   upgrade_settings {
     max_surge       = 1
     max_unavailable = 0

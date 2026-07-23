@@ -4,4 +4,3 @@ metadata:
   name: staging
   labels:
     environment: staging
-    managed-by: terraform
