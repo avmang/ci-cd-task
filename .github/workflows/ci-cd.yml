@@ -176,19 +176,17 @@ jobs:
           # Create namespace if not exists
           kubectl apply -f k8s/namespace-staging.yaml
 
-          # Update image in deployment
+          # Image Update
           sed -i "s|gd-gcp-gridu-devops-t1-t2|${{ env.GCP_PROJECT_ID }}|g" k8s/*.yaml
           sed -i "s|COMMIT_SHA|staging-${{ github.sha }}|g" k8s/deployment.yaml
           sed -i "s|:latest|:staging-${{ github.sha }}|g" k8s/deployment.yaml
           sed -i "s|environment: production|environment: staging|g" k8s/deployment.yaml
 
-          # Apply Kubernetes manifests to staging namespace
           kubectl apply -f k8s/serviceaccount.yaml -n staging
           kubectl apply -f k8s/deployment.yaml -n staging
           kubectl apply -f k8s/service.yaml -n staging
           kubectl apply -f k8s/hpa.yaml -n staging
 
-          # Wait for deployment to be ready
           kubectl rollout status deployment/${{ env.SERVICE }} -n staging --timeout=5m
 
       - name: Get service URL
@@ -260,18 +258,16 @@ jobs:
           # Create namespace if not exists
           kubectl apply -f k8s/namespace-production.yaml
 
-          # Update image in deployment
+          # Image Update
           sed -i "s|gd-gcp-gridu-devops-t1-t2|${{ env.GCP_PROJECT_ID }}|g" k8s/*.yaml
           sed -i "s|COMMIT_SHA|${{ github.sha }}|g" k8s/deployment.yaml
           sed -i "s|:latest|:${{ github.sha }}|g" k8s/deployment.yaml
 
-          # Apply Kubernetes manifests to production namespace
           kubectl apply -f k8s/serviceaccount.yaml -n production
           kubectl apply -f k8s/deployment.yaml -n production
           kubectl apply -f k8s/service.yaml -n production
           kubectl apply -f k8s/hpa.yaml -n production
 
-          # Wait for deployment to be ready
           kubectl rollout status deployment/${{ env.SERVICE }} -n production --timeout=5m
 
       - name: Get service URL
