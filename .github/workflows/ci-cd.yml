@@ -4,7 +4,9 @@ on:
   push:
     branches: [ main, develop ]
   pull_request:
-    branches: [ main ]
+    branches:
+      - main
+
 
 env:
   gd-gcp-gridu-devops-t1-t2: ${{ secrets.GCP_gd-gcp-gridu-devops-t1-t2 }}
