@@ -1,4 +1,4 @@
-gd-gcp-gridu-devops-t1-t2    = "your-gcp-project-id"
+project_id    = "your-gcp-project-id"
 region        = "us-central1"
 github_repo   = "mavoyan/your-repo-name"
 environment   = "staging"

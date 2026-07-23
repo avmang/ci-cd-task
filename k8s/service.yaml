@@ -2,6 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mavoyan-flask-app
+  namespace: default
   labels:
     app: mavoyan-flask-app
 spec:

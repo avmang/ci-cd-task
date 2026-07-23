@@ -1,12 +1,12 @@
 output "artifact_registry_repository" {
   description = "Artifact Registry repository URL"
-  value       = "${var.region}-docker.pkg.dev/${var.gd-gcp-gridu-devops-t1-t2}/${google_artifact_registry_repository.repo.repository_id}"
+  value       = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.repo.repository_id}"
   sensitive   = false
 }
 
-output "gd-gcp-gridu-devops-t1-t2" {
+output "project_id" {
   description = "GCP Project ID"
-  value       = var.gd-gcp-gridu-devops-t1-t2
+  value       = var.project_id
   sensitive   = false
 }
 

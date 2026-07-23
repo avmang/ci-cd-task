@@ -16,7 +16,7 @@ resource "google_container_cluster" "primary" {
 
   # Workload Identity
   workload_identity_config {
-    workload_pool = "${var.gd-gcp-gridu-devops-t1-t2}.svc.id.goog"
+    workload_pool = "${var.project_id}.svc.id.goog"
   }
 
   # Security

@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mavoyan-flask-app
+  namespace: default
   labels:
     app: mavoyan-flask-app
     environment: production
@@ -15,7 +16,7 @@ spec:
       labels:
         app: mavoyan-flask-app
     spec:
-      serviceAccountName: mavoyan-flask-app
+      serviceAccountName: gke-image-puller
       containers:
       - name: flask-app
         image: us-central1-docker.pkg.dev/gd-gcp-gridu-devops-t1-t2/mavoyan-flask-app-repo/mavoyan-flask-app:latest

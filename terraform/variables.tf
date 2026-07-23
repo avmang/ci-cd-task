@@ -1,4 +1,4 @@
-variable "gd-gcp-gridu-devops-t1-t2" {
+variable "project_id" {
   description = "GCP Project ID"
   type        = string
   default     = "gd-gcp-gridu-devops-t1-t2"
